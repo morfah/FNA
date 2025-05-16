@@ -215,7 +215,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				0,
 				handle.AddrOfPinnedObject(),
 				data.Length * MarshalHelper.SizeOf<T>(),
-				SetDataOptions.None
+				SetDataOptions.Discard
 			);
 			handle.Free();
 		}
@@ -234,7 +234,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				0,
 				handle.AddrOfPinnedObject() + (startIndex * MarshalHelper.SizeOf<T>()),
 				elementCount * MarshalHelper.SizeOf<T>(),
-				SetDataOptions.None
+				SetDataOptions.Discard
 			);
 			handle.Free();
 		}
@@ -254,7 +254,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				offsetInBytes,
 				handle.AddrOfPinnedObject() + (startIndex * MarshalHelper.SizeOf<T>()),
 				elementCount * MarshalHelper.SizeOf<T>(),
-				SetDataOptions.None
+				SetDataOptions.Discard
 			);
 			handle.Free();
 		}

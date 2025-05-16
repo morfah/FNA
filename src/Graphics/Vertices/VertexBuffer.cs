@@ -261,7 +261,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				elementCount,
 				elementSizeInBytes,
 				vertexStride,
-				SetDataOptions.None
+				SetDataOptions.Discard
 			);
 			handle.Free();
 		}
