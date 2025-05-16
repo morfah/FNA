@@ -258,7 +258,8 @@ namespace Microsoft.Xna.Framework
 				INTERNAL_AddInstance(evt[0].gdevice.which);
 			}
 
-			if (OSVersion.Equals("Windows"))
+			if (	OSVersion.Equals("Windows") &&
+				SDL.SDL_GetHint("FNA_WIN32_IGNORE_WM_PAINT") != "1" )
 			{
 				/* Windows has terrible event pumping and doesn't give us
 				 * WM_PAINT events correctly. So we get to do this!
@@ -1030,6 +1031,24 @@ namespace Microsoft.Xna.Framework
 					else if (evt.type == (uint) SDL.SDL_EventType.SDL_EVENT_WINDOW_MOUSE_LEAVE)
 					{
 						SDL.SDL_EnableScreenSaver();
+					}
+
+					// Full screen
+					else if (evt.type == (uint) SDL.SDL_EventType.SDL_EVENT_WINDOW_ENTER_FULLSCREEN)
+					{
+						Object manager = game.Services.GetService(typeof(IGraphicsDeviceManager));
+						if (manager != null && manager is GraphicsDeviceManager)
+						{
+							((GraphicsDeviceManager) manager).IsFullScreen = true;
+						}
+					}
+					else if (evt.type == (uint) SDL.SDL_EventType.SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
+					{
+						Object manager = game.Services.GetService(typeof(IGraphicsDeviceManager));
+						if (manager != null && manager is GraphicsDeviceManager)
+						{
+							((GraphicsDeviceManager) manager).IsFullScreen = false;
+						}
 					}
 				}
 
