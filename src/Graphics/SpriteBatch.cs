@@ -1073,6 +1073,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		) {
 			if (numSprites >= vertexInfo.Length)
 			{
+				FNALoggerEXT.LogWarn($"Sent too many Sprites to the batcher. Things are not optimal. {numSprites} >= {vertexInfo.Length}");
+
 				if (vertexInfo.Length >= MAX_ARRAYSIZE)
 				{
 					/* FIXME: We're doing this for safety but it's possible that
