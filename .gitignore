@@ -8,3 +8,5 @@ obj_netstandard/
 *.userprefs
 *.suo
 *.vs
+lib/SDL2
+lib/SDL3
