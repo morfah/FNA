@@ -93,21 +93,21 @@ namespace Microsoft.Xna.Framework
 #pragma warning restore CA2255 // The 'ModuleInitializer' attribute should not be used in libraries
 		public static void Init()
 		{
-			if (!RuntimeFeature.IsDynamicCodeCompiled)
-			{
-				/* NativeAOT platforms don't perform dynamic loading,
-				 * so setting a DllImportResolver is unnecessary.
-				 *
-				 * However, iOS and tvOS with Mono AOT statically link
-				 * their dependencies, so we need special handling for them.
-				 */
-				if (OperatingSystem.IsIOS() || OperatingSystem.IsTvOS())
-				{
-					NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), LoadStaticLibrary);
-				}
+			// if (!RuntimeFeature.IsDynamicCodeCompiled)
+			// {
+			// 	/* NativeAOT platforms don't perform dynamic loading,
+			// 	 * so setting a DllImportResolver is unnecessary.
+			// 	 *
+			// 	 * However, iOS and tvOS with Mono AOT statically link
+			// 	 * their dependencies, so we need special handling for them.
+			// 	 */
+			// 	if (OperatingSystem.IsIOS() || OperatingSystem.IsTvOS())
+			// 	{
+			// 		NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), LoadStaticLibrary);
+			// 	}
 
-				return;
-			}
+			// 	return;
+			// }
 
 			// Get the platform and architecture
 			string os = GetPlatformName();
