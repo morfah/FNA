@@ -215,7 +215,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				0,
 				handle.AddrOfPinnedObject(),
 				data.Length * MarshalHelper.SizeOf<T>(),
-				SetDataOptions.Discard
+				SetDataOptions.None
 			);
 			handle.Free();
 		}
@@ -234,7 +234,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				0,
 				handle.AddrOfPinnedObject() + (startIndex * MarshalHelper.SizeOf<T>()),
 				elementCount * MarshalHelper.SizeOf<T>(),
-				SetDataOptions.Discard
+				SetDataOptions.None
 			);
 			handle.Free();
 		}
@@ -254,7 +254,7 @@ namespace Microsoft.Xna.Framework.Graphics
 				offsetInBytes,
 				handle.AddrOfPinnedObject() + (startIndex * MarshalHelper.SizeOf<T>()),
 				elementCount * MarshalHelper.SizeOf<T>(),
-				SetDataOptions.Discard
+				SetDataOptions.None
 			);
 			handle.Free();
 		}
@@ -314,7 +314,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		#endregion
 
 		#region Private Type Size Calculator
-		
+
 		/// <summary>
 		/// Gets the relevant IndexElementSize enum value for the given type.
 		/// </summary>
