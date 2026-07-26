@@ -297,7 +297,7 @@ namespace Microsoft.Xna.Framework.Content
 			}
 
 			// Check for XNB header
-			stream.Read(xnbHeader, 0, xnbHeader.Length);
+			stream.ReadExactly(xnbHeader, 0, xnbHeader.Length);
 			if (	xnbHeader[0] == 'X' &&
 				xnbHeader[1] == 'N' &&
 				xnbHeader[2] == 'B' &&
@@ -362,7 +362,7 @@ namespace Microsoft.Xna.Framework.Content
 				else if (typeof(T) == typeof(Effect))
 				{
 					byte[] data = new byte[stream.Length];
-					stream.Read(data, 0, (int) stream.Length);
+					stream.ReadExactly(data, 0, (int) stream.Length);
 					Effect effect = new Effect(GetGraphicsDevice(), data);
 					effect.Name = assetName;
 					result = effect;
@@ -499,7 +499,7 @@ namespace Microsoft.Xna.Framework.Content
 					true,
 					true
 				);
-				stream.Read(compressedStream.GetBuffer(), 0, compressedSize);
+				stream.ReadExactly(compressedStream.GetBuffer(), 0, compressedSize);
 
 				// Default window size for XNB encoded files is 64Kb (need 16 bits to represent it)
 				LzxDecoder dec = new LzxDecoder(16);

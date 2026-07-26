@@ -412,7 +412,7 @@ namespace Microsoft.Xna.Framework.Content
 					case LzxConstants.BLOCKTYPE.UNCOMPRESSED:
 						if((inData.Position + this_run) > endpos) return -1; // TODO: Throw proper exception
 						byte[] temp_buffer = new byte[this_run];
-						inData.Read(temp_buffer, 0, this_run);
+						inData.ReadExactly(temp_buffer, 0, this_run);
 						temp_buffer.CopyTo(window, (int)window_posn);
 						window_posn += (uint)this_run;
 						break;
