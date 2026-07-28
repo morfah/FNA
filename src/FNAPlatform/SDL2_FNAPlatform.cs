@@ -509,7 +509,8 @@ namespace Microsoft.Xna.Framework
 				window,
 				@"\\.\DISPLAY" + (
 					SDL.SDL_GetWindowDisplayIndex(window) + 1
-				).ToString()
+				).ToString(),
+				title
 			);
 		}
 
@@ -859,7 +860,7 @@ namespace Microsoft.Xna.Framework
 
 		public static void SetTextInputRectangle(IntPtr window, Rectangle rectangle)
 		{
-			SDL.SDL_Rect rect = new SDL.SDL_Rect();
+			SDL.SDL_Rect rect;
 			rect.x = rectangle.X;
 			rect.y = rectangle.Y;
 			rect.w = rectangle.Width;
@@ -1709,11 +1710,12 @@ namespace Microsoft.Xna.Framework
 
 			// Default input format
 			SDL.SDL_AudioSpec have;
-			SDL.SDL_AudioSpec want = new SDL.SDL_AudioSpec();
-			want.freq = Microphone.SAMPLERATE;
-			want.format = SDL.AUDIO_S16;
-			want.channels = 1;
-			want.samples = 4096; /* FIXME: Anything specific? */
+			SDL.SDL_AudioSpec want = new SDL.SDL_AudioSpec {
+				freq = Microphone.SAMPLERATE,
+				format = SDL.AUDIO_S16,
+				channels = 1,
+				samples = 4096 /* FIXME: Anything specific? */
+			};
 
 			// First mic is always OS default
 			result[0] = new Microphone(
@@ -2574,6 +2576,7 @@ namespace Microsoft.Xna.Framework
 			{ (int) SDL.SDL_Keycode.SDLK_MUTE,			Keys.VolumeMute },
 			{ (int) SDL.SDL_Keycode.SDLK_VOLUMEUP,		Keys.VolumeUp },
 			{ (int) SDL.SDL_Keycode.SDLK_VOLUMEDOWN,	Keys.VolumeDown },
+			{ (int) SDL.SDL_Keycode.SDLK_LESS,		Keys.OemBackslash },
 			{ '²' /* FIXME: AZERTY SDL2? -flibit */,	Keys.OemTilde },
 			{ 'é' /* FIXME: BEPO SDL2? -flibit */,		Keys.None },
 			{ '|' /* FIXME: Norwegian SDL2? -flibit */,	Keys.OemPipe },
@@ -2706,10 +2709,10 @@ namespace Microsoft.Xna.Framework
 			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_MUTE,			Keys.VolumeMute },
 			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_VOLUMEUP,		Keys.VolumeUp },
 			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_VOLUMEDOWN,	Keys.VolumeDown },
+			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_NONUSBACKSLASH,	Keys.OemBackslash },
 			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_UNKNOWN,		Keys.None },
 			/* FIXME: The following scancodes need verification! */
-			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_NONUSHASH,	Keys.None },
-			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_NONUSBACKSLASH,	Keys.None }
+			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_NONUSHASH,	Keys.None }
 		};
 		private static Dictionary<int, SDL.SDL_Scancode> INTERNAL_xnaMap = new Dictionary<int, SDL.SDL_Scancode>()
 		{
@@ -2833,6 +2836,7 @@ namespace Microsoft.Xna.Framework
 			{ (int) Keys.VolumeMute,	SDL.SDL_Scancode.SDL_SCANCODE_MUTE },
 			{ (int) Keys.VolumeUp,		SDL.SDL_Scancode.SDL_SCANCODE_VOLUMEUP },
 			{ (int) Keys.VolumeDown,	SDL.SDL_Scancode.SDL_SCANCODE_VOLUMEDOWN },
+			{ (int) Keys.OemBackslash,	SDL.SDL_Scancode.SDL_SCANCODE_NONUSBACKSLASH },
 			{ (int) Keys.None,		SDL.SDL_Scancode.SDL_SCANCODE_UNKNOWN }
 		};
 

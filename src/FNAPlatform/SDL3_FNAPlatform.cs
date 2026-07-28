@@ -433,7 +433,8 @@ namespace Microsoft.Xna.Framework
 				UnwrapWindow(sdlWindow),
 				@"\\.\DISPLAY" + (
 					SDL.SDL_GetDisplayForWindow(sdlWindow)
-				).ToString()
+				).ToString(),
+				title
 			);
 		}
 
@@ -769,7 +770,7 @@ namespace Microsoft.Xna.Framework
 
 		public static void SetTextInputRectangle(IntPtr window, Rectangle rectangle)
 		{
-			SDL.SDL_Rect rect = new SDL.SDL_Rect();
+			SDL.SDL_Rect rect;
 			rect.x = rectangle.X;
 			rect.y = rectangle.Y;
 			rect.w = rectangle.Width;
@@ -1698,38 +1699,40 @@ namespace Microsoft.Xna.Framework
 			Microphone[] result = new Microphone[numDev + 1];
 
 			// Default input format
-			SDL.SDL_AudioSpec want = new SDL.SDL_AudioSpec();
+			SDL.SDL_AudioSpec want;
 			want.freq = Microphone.SAMPLERATE;
 			want.format = SDL.SDL_AudioFormat.SDL_AUDIO_S16;
 			want.channels = 1;
 
-			// First mic is always OS default
-			result[0] = new Microphone(
-				SDL.SDL_OpenAudioDevice(
-					0xFFFFFFFEu, // FIXME CSHARP: SDL_AUDIO_DEVICE_DEFAULT_RECORDING
-					ref want
-				),
-				"Default Device"
-			);
-			for (int i = 0; i < numDev; i += 1)
+			for (int i = -1; i < numDev; i += 1)
 			{
-				string name = SDL.SDL_GetAudioDeviceName(devices[i]);
-				result[i + 1] = new Microphone(
-					SDL.SDL_OpenAudioDevice(
-						devices[i],
+				string name;
+				uint audioDeviceID;
+				if (i == -1)
+				{
+					// First mic is always OS default
+					audioDeviceID = SDL.SDL_OpenAudioDevice(
+						0xFFFFFFFEu, // FIXME CSHARP: SDL_AUDIO_DEVICE_DEFAULT_RECORDING
 						ref want
-					),
-					name
-				);
+					);
+					name = "Default Device";
+				}
+				else
+				{
+					audioDeviceID = SDL.SDL_OpenAudioDevice(devices[i], ref want);
+					name = SDL.SDL_GetAudioDeviceName(audioDeviceID);
+				}
+				SDL.SDL_AudioDevicePaused(audioDeviceID);
+				result[i + 1] = new Microphone(audioDeviceID, name);
 
 				IntPtr stream;
 				SDL.SDL_AudioSpec have;
 				int filler;
-				SDL.SDL_GetAudioDeviceFormat(devices[i], out have, out filler);
+				SDL.SDL_GetAudioDeviceFormat(audioDeviceID, out have, out filler);
 				stream = SDL.SDL_CreateAudioStream(ref want, ref have);
 
-				SDL.SDL_BindAudioStream(devices[i], stream);
-				micStreams.Add(devices[i], stream);
+				SDL.SDL_BindAudioStream(audioDeviceID, stream);
+				micStreams.Add(audioDeviceID, stream);
 			}
 			SDL.SDL_free((IntPtr) devices);
 			return result;
@@ -2478,6 +2481,7 @@ namespace Microsoft.Xna.Framework
 			{ (int) SDL.SDL_Keycode.SDLK_MUTE,		Keys.VolumeMute },
 			{ (int) SDL.SDL_Keycode.SDLK_VOLUMEUP,		Keys.VolumeUp },
 			{ (int) SDL.SDL_Keycode.SDLK_VOLUMEDOWN,	Keys.VolumeDown },
+			{ (int) SDL.SDL_Keycode.SDLK_LESS,		Keys.OemBackslash },
 			{ '²' /* FIXME: AZERTY SDL3? -flibit */,	Keys.OemTilde },
 			{ 'é' /* FIXME: BEPO SDL3? -flibit */,		Keys.None },
 			{ '|' /* FIXME: Norwegian SDL3? -flibit */,	Keys.OemPipe },
@@ -2610,10 +2614,10 @@ namespace Microsoft.Xna.Framework
 			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_MUTE,			Keys.VolumeMute },
 			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_VOLUMEUP,		Keys.VolumeUp },
 			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_VOLUMEDOWN,	Keys.VolumeDown },
+			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_NONUSBACKSLASH,	Keys.OemBackslash },
 			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_UNKNOWN,		Keys.None },
 			/* FIXME: The following scancodes need verification! */
-			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_NONUSHASH,	Keys.None },
-			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_NONUSBACKSLASH,	Keys.None }
+			{ (int) SDL.SDL_Scancode.SDL_SCANCODE_NONUSHASH,	Keys.None }
 		};
 		private static Dictionary<int, SDL.SDL_Scancode> INTERNAL_xnaMap = new Dictionary<int, SDL.SDL_Scancode>()
 		{
@@ -2737,6 +2741,7 @@ namespace Microsoft.Xna.Framework
 			{ (int) Keys.VolumeMute,	SDL.SDL_Scancode.SDL_SCANCODE_MUTE },
 			{ (int) Keys.VolumeUp,		SDL.SDL_Scancode.SDL_SCANCODE_VOLUMEUP },
 			{ (int) Keys.VolumeDown,	SDL.SDL_Scancode.SDL_SCANCODE_VOLUMEDOWN },
+			{ (int) Keys.OemBackslash,	SDL.SDL_Scancode.SDL_SCANCODE_NONUSBACKSLASH },
 			{ (int) Keys.None,		SDL.SDL_Scancode.SDL_SCANCODE_UNKNOWN }
 		};
 
