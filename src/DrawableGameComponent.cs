@@ -23,7 +23,13 @@ namespace Microsoft.Xna.Framework
 		{
 			get
 			{
-				return this.Game.GraphicsDevice;
+				IGraphicsDeviceService graphicsDeviceService = (IGraphicsDeviceService)
+					Game.Services.INTERNAL_GetService(typeof(IGraphicsDeviceService));
+				if (graphicsDeviceService == null)
+				{
+					throw new InvalidOperationException("The GraphicsDevice property cannot be used before Initialize has been called.");
+				}
+				return graphicsDeviceService.GraphicsDevice;
 			}
 		}
 
@@ -38,7 +44,7 @@ namespace Microsoft.Xna.Framework
 				if (_drawOrder != value)
 				{
 					_drawOrder = value;
-					OnDrawOrderChanged(this, null);
+					OnDrawOrderChanged(this, EventArgs.Empty);
 				}
 			}
 		}
@@ -93,17 +99,18 @@ namespace Microsoft.Xna.Framework
 				_initialized = true;
 
 				IGraphicsDeviceService graphicsDeviceService = (IGraphicsDeviceService)
-					Game.Services.GetService(typeof(IGraphicsDeviceService));
-				if (graphicsDeviceService != null)
+					Game.Services.INTERNAL_GetService(typeof(IGraphicsDeviceService));
+				if (graphicsDeviceService == null)
 				{
-					if (graphicsDeviceService.GraphicsDevice != null)
-					{
-						LoadContent();
-					}
-					else
-					{
-						graphicsDeviceService.DeviceCreated += OnDeviceCreated;
-					}
+					throw new InvalidOperationException("Drawable components require a graphics device service in the game service container.");
+				}
+				if (graphicsDeviceService.GraphicsDevice != null)
+				{
+					LoadContent();
+				}
+				else
+				{
+					graphicsDeviceService.DeviceCreated += OnDeviceCreated;
 				}
 			}
 		}
@@ -154,7 +161,7 @@ namespace Microsoft.Xna.Framework
 		{
 			if (VisibleChanged != null)
 			{
-				VisibleChanged(this, EventArgs.Empty);
+				VisibleChanged(this, args);
 			}
 		}
 
@@ -162,7 +169,7 @@ namespace Microsoft.Xna.Framework
 		{
 			if (DrawOrderChanged != null)
 			{
-				DrawOrderChanged(this, null);
+				DrawOrderChanged(this, args);
 			}
 		}
 

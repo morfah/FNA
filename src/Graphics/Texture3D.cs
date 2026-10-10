@@ -50,7 +50,19 @@ namespace Microsoft.Xna.Framework.Graphics
 		) {
 			if (graphicsDevice == null)
 			{
-				throw new ArgumentNullException("graphicsDevice");
+				throw new ArgumentNullException("graphicsDevice", "The GraphicsDevice must not be null when creating new resources.");
+			}
+			if (width <= 0)
+			{
+				throw new ArgumentOutOfRangeException("width", "Resource size must be greater than zero.");
+			}
+			if (height <= 0)
+			{
+				throw new ArgumentOutOfRangeException("height", "Resource size must be greater than zero.");
+			}
+			if (depth <= 0)
+			{
+				throw new ArgumentOutOfRangeException("depth", "Resource size must be greater than zero.");
 			}
 
 			GraphicsDevice = graphicsDevice;
@@ -79,7 +91,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			SetData<T>(
 				data,
 				0,
-				data.Length
+				data == null ? 0 : data.Length
 			);
 		}
 
@@ -114,12 +126,32 @@ namespace Microsoft.Xna.Framework.Graphics
 			int startIndex,
 			int elementCount
 		) where T : struct {
-			if (data == null)
+			if (texture == IntPtr.Zero)
 			{
-				throw new ArgumentNullException("data");
+				throw new ObjectDisposedException(GetType().Name);
 			}
-
+			if (data == null || data.Length == 0)
+			{
+				throw new ArgumentNullException("data", "This method does not accept null for this parameter.");
+			}
+			if (unchecked((uint) level >= (uint) LevelCount))
+			{
+				throw new InvalidOperationException("An unexpected error has occurred.");
+			}
+			ValidateCopyParameters(data.Length, startIndex, elementCount);
+			int formatSize = GetFormatSizeEXT(Format);
 			int elementSizeInBytes = MarshalHelper.SizeOf<T>();
+			if (formatSize % elementSizeInBytes != 0)
+			{
+				throw new ArgumentException("The type you are using for T in this method is an invalid size for this resource.");
+			}
+			if (unchecked(
+				(uint) left >= (uint) right || (uint) right > (uint) Width >> level ||
+				(uint) top >= (uint) bottom || (uint) bottom > (uint) Height >> level ||
+				(uint) front >= (uint) back || (uint) back > (uint) Depth >> level
+			)) {
+				throw new ArgumentException("The rectangle is too large or too small for this resource.", "box");
+			}
 			GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 			FNA3D.FNA3D_SetTextureData3D(
 				GraphicsDevice.GLDevice,
@@ -182,7 +214,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			GetData(
 				data,
 				0,
-				data.Length
+				data == null ? 0 : data.Length
 			);
 		}
 
@@ -238,26 +270,32 @@ namespace Microsoft.Xna.Framework.Graphics
 			int startIndex,
 			int elementCount
 		) where T : struct {
+			if (texture == IntPtr.Zero)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
 			if (data == null || data.Length == 0)
 			{
-				throw new ArgumentException("data cannot be null");
+				throw new ArgumentNullException("data", "This method does not accept null for this parameter.");
 			}
-			if (data.Length < startIndex + elementCount)
+			if (unchecked((uint) level >= (uint) LevelCount))
 			{
-				throw new ArgumentException(
-					"The data passed has a length of " + data.Length.ToString() +
-					" but " + elementCount.ToString() + " pixels have been requested."
-				);
+				throw new InvalidOperationException("An unexpected error has occurred.");
 			}
-			if (	(left < 0 || left >= right) ||
-				(top < 0 || top >= bottom) ||
-				(front < 0 || front >= back)	)
-			{
-				throw new ArgumentException("Neither box size nor box position can be negative");
-			}
-
+			ValidateCopyParameters(data.Length, startIndex, elementCount);
+			int formatSize = GetFormatSizeEXT(Format);
 			int elementSizeInBytes = MarshalHelper.SizeOf<T>();
-			ValidateGetDataFormat(Format, elementSizeInBytes);
+			if (formatSize % elementSizeInBytes != 0)
+			{
+				throw new ArgumentException("The type you are using for T in this method is an invalid size for this resource.");
+			}
+			if (unchecked(
+				(uint) left >= (uint) right || (uint) right > (uint) Width >> level ||
+				(uint) top >= (uint) bottom || (uint) bottom > (uint) Height >> level ||
+				(uint) front >= (uint) back || (uint) back > (uint) Depth >> level
+			)) {
+				throw new ArgumentException("The rectangle is too large or too small for this resource.", "box");
+			}
 
 			GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 			FNA3D.FNA3D_GetTextureData3D(

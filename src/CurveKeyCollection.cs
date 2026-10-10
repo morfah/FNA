@@ -22,6 +22,7 @@ namespace Microsoft.Xna.Framework
 	/// <summary>
 	/// The collection of the <see cref="CurveKey"/> elements and a part of the <see cref="Curve"/> class.
 	/// </summary>
+	[Serializable]
 	public class CurveKeyCollection : ICollection<CurveKey>, IEnumerable<CurveKey>, IEnumerable
 	{
 		#region Public Properties
@@ -61,19 +62,19 @@ namespace Microsoft.Xna.Framework
 			}
 			set
 			{
-				if (value == null)
+				if (ReferenceEquals(value, null))
 				{
 					throw new ArgumentNullException();
 				}
 
-				if (MathHelper.WithinEpsilon(innerlist[index].Position, value.Position))
+				if (innerlist[index].Position == value.Position)
 				{
 					innerlist[index] = value;
 				}
 				else
 				{
 					innerlist.RemoveAt(index);
-					innerlist.Add(value);
+					INTERNAL_Add(value);
 				}
 			}
 		}
@@ -117,20 +118,11 @@ namespace Microsoft.Xna.Framework
 		/// <remarks>The new key would be added respectively to a position of that key and the position of other keys.</remarks>
 		public void Add(CurveKey item)
 		{
-			if (item == null)
+			if (ReferenceEquals(item, null))
 			{
 				throw new ArgumentNullException();
 			}
-			int i = innerlist.BinarySearch(item);
-			if (i < 0)
-			{
-				/* ... otherwise, a negative number that is the bitwise complement
-				 * of the index of the next element that is larger than item or, if there
-				 * is no larger element, the bitwise complement of Count.
-				 */
-				i = ~i;
-			}
-			this.innerlist.Insert(i, item);
+			INTERNAL_Add(item);
 		}
 
 		/// <summary>
@@ -211,6 +203,24 @@ namespace Microsoft.Xna.Framework
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return innerlist.GetEnumerator();
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void INTERNAL_Add(CurveKey item)
+		{
+			int i = innerlist.BinarySearch(item);
+			if (i < 0)
+			{
+				/* ... otherwise, a negative number that is the bitwise complement
+				 * of the index of the next element that is larger than item or, if there
+				 * is no larger element, the bitwise complement of Count.
+				 */
+				i = ~i;
+			}
+			this.innerlist.Insert(i, item);
 		}
 
 		#endregion

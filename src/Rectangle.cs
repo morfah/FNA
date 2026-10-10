@@ -397,49 +397,40 @@ namespace Microsoft.Xna.Framework
 			ref Rectangle value2,
 			out Rectangle result
 		) {
-			if (value1.Intersects(value2))
+			int right = Math.Min(value1.Right, value2.Right);
+			int bottom = Math.Min(value1.Bottom, value2.Bottom);
+			int left = Math.Max(value1.Left, value2.Left);
+			int top = Math.Max(value1.Top, value2.Top);
+			if (left < right && top < bottom)
 			{
-				int right_side = Math.Min(
-					value1.X + value1.Width,
-					value2.X + value2.Width
-				);
-				int left_side = Math.Max(value1.X, value2.X);
-				int top_side = Math.Max(value1.Y, value2.Y);
-				int bottom_side = Math.Min(
-					value1.Y + value1.Height,
-					value2.Y + value2.Height
-				);
-				result = new Rectangle(
-					left_side,
-					top_side,
-					right_side - left_side,
-					bottom_side - top_side
-				);
+				result = new Rectangle(left, top, right - left, bottom - top);
 			}
 			else
 			{
-				result = new Rectangle(0, 0, 0, 0);
+				result = new Rectangle();
 			}
 		}
 
 		public static Rectangle Union(Rectangle value1, Rectangle value2)
 		{
+			Rectangle result;
 			int x = Math.Min(value1.X, value2.X);
 			int y = Math.Min(value1.Y, value2.Y);
-			return new Rectangle(
-				x,
-				y,
-				Math.Max(value1.Right, value2.Right) - x,
-				Math.Max(value1.Bottom, value2.Bottom) - y
-			);
+			result.X = x;
+			result.Y = y;
+			result.Width = Math.Max(value1.Right, value2.Right) - x;
+			result.Height = Math.Max(value1.Bottom, value2.Bottom) - y;
+			return result;
 		}
 
 		public static void Union(ref Rectangle value1, ref Rectangle value2, out Rectangle result)
 		{
-			result.X = Math.Min(value1.X, value2.X);
-			result.Y = Math.Min(value1.Y, value2.Y);
-			result.Width = Math.Max(value1.Right, value2.Right) - result.X;
-			result.Height = Math.Max(value1.Bottom, value2.Bottom) - result.Y;
+			int x = Math.Min(value1.X, value2.X);
+			int y = Math.Min(value1.Y, value2.Y);
+			result.X = x;
+			result.Y = y;
+			result.Width = Math.Max(value1.Right, value2.Right) - x;
+			result.Height = Math.Max(value1.Bottom, value2.Bottom) - y;
 		}
 
 		#endregion

@@ -7,43 +7,19 @@
  */
 #endregion
 
-#region Using Statements
-using System;
-using System.Runtime.InteropServices;
-#endregion
-
 namespace Microsoft.Xna.Framework.Graphics.PackedVector
 {
 	internal static class HalfTypeHelper
 	{
-		#region Private Struct uif
-
-		[StructLayout(LayoutKind.Explicit)]
-#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
-		private struct uif
-#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
-		{
-			[FieldOffset(0)]
-			public float f;
-			[FieldOffset(0)]
-			public int i;
-			[FieldOffset(0)]
-			public uint u;
-		}
-
-		#endregion
-
 		#region Internal Static Methods
 
 		internal static ushort Convert(float f)
 		{
-			uif uif = new uif();
-			uif.f = f;
-			return Convert(uif.i);
-		}
-
-		internal static ushort Convert(int i)
-		{
+			int i;
+			unsafe
+			{
+				i = *(int*) &f;
+			}
 			int s = (i >> 16) & 0x00008000;
 			int e = ((i >> 23) & 0x000000ff) - (127 - 15);
 			int m = i & 0x007fffff;
@@ -102,7 +78,7 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 			uint mantissa = (uint)(value & 1023);
 			uint exp = 0xfffffff2;
 
-			if ((value & -33792) == 0)
+			if ((value & 0x7C00) == 0)
 			{
 				if (mantissa != 0)
 				{
@@ -124,9 +100,10 @@ namespace Microsoft.Xna.Framework.Graphics.PackedVector
 				rst = (uint) (((((uint) value & 0x8000) << 16) | ((((((uint) value >> 10) & 0x1f) - 15) + 127) << 23)) | (mantissa << 13));
 			}
 
-			uif uif = new uif();
-			uif.u = rst;
-			return uif.f;
+			unsafe
+			{
+				return *(float*) &rst;
+			}
 		}
 
 		#endregion

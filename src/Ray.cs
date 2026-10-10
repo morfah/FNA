@@ -166,7 +166,7 @@ namespace Microsoft.Xna.Framework
 			/* Having a positive tMin and a negative tMax means the ray is inside the
 			 * box we expect the intesection distance to be 0 in that case.
 			 */
-			if ((tMin.HasValue && tMin < 0) && tMax > 0) return 0;
+			if ((tMin.HasValue && tMin < 0) && tMax >= 0) return 0;
 
 			/* A negative tMin means that the intersection point is behind the ray's
 			 * origin. We discard these as not hitting the AABB.
@@ -198,7 +198,7 @@ namespace Microsoft.Xna.Framework
 
 		public float? Intersects(BoundingFrustum frustum)
 		{
-			if (frustum == null)
+			if (ReferenceEquals(frustum, null))
 			{
 				throw new ArgumentNullException("frustum");
 			}
@@ -240,11 +240,11 @@ namespace Microsoft.Xna.Framework
 
 			float distanceAlongRay;
 
-			/* If the distance between the ray start and the sphere's center is less than
+			/* If the distance between the ray start and the sphere's center is less than or equal
 			 * the radius of the sphere, it means we've intersected. Checking the
 			 * LengthSquared is faster.
 			 */
-			if (differenceLengthSquared < sphereRadiusSquared)
+			if (differenceLengthSquared <= sphereRadiusSquared)
 			{
 				result = 0.0f;
 				return;

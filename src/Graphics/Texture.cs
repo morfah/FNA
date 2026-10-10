@@ -40,7 +40,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			set
 			{
 				// Avoid calling SetTextureName when the value hasn't changed.
-				if (value == base.Name)
+				if (ReferenceEquals(value, base.Name))
 				{
 					return;
 				}
@@ -189,20 +189,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			 * OpenGL 2.1 Specification, section 3.6.1, table 3.1 specifies that the pixelstorei alignment cannot exceed 8
 			 */
 			return Math.Min(8, GetFormatSizeEXT(format));
-		}
-
-		internal static void ValidateGetDataFormat(
-			SurfaceFormat format,
-			int elementSizeInBytes
-		) {
-			if (GetFormatSizeEXT(format) % elementSizeInBytes != 0)
-			{
-				throw new ArgumentException(
-					"The type you are using for T in this" +
-					" method is an invalid size for this" +
-					" resource"
-				);
-			}
 		}
 
 		#endregion

@@ -173,7 +173,7 @@ namespace Microsoft.Xna.Framework
 
 		#region Private Static Fields
 
-		// These are NOT readonly, for weird performance reasons -flibit
+		// These are NOT readonly, for avoiding defensive copy -flibit
 		private static Vector3 zero = new Vector3(0f, 0f, 0f);
 		private static Vector3 one = new Vector3(1f, 1f, 1f);
 		private static Vector3 unitX = new Vector3(1f, 0f, 0f);
@@ -1134,11 +1134,11 @@ namespace Microsoft.Xna.Framework
 			{
 				throw new ArgumentNullException("destinationArray");
 			}
-			if (sourceIndex + length < sourceArray.Length)
+			if (sourceIndex + length > sourceArray.Length)
 			{
 				throw new ArgumentException("Source array must be equal or bigger than requested length.");
 			}
-			if (destinationIndex + length < destinationArray.Length)
+			if (destinationIndex + length > destinationArray.Length)
 			{
 				throw new ArgumentException("Target array size must be equal or bigger than source array size.");
 			}

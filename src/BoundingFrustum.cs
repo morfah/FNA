@@ -23,6 +23,7 @@ namespace Microsoft.Xna.Framework
 	/// Defines a viewing frustum for intersection operations.
 	/// </summary>
 	[DebuggerDisplay("{DebugDisplayString,nq}")]
+	[Serializable]
 	public class BoundingFrustum : IEquatable<BoundingFrustum>
 	{
 		#region Public Properties
@@ -143,10 +144,15 @@ namespace Microsoft.Xna.Framework
 
 		#endregion
 
+		#region Internal Fields
+
+		internal readonly Vector3[] corners = new Vector3[CornerCount];
+
+		#endregion
+
 		#region Private Fields
 
 		private Matrix matrix;
-		private readonly Vector3[] corners = new Vector3[CornerCount];
 		private readonly Plane[] planes = new Plane[PlaneCount];
 
 		/// <summary>
@@ -208,7 +214,7 @@ namespace Microsoft.Xna.Framework
 		/// <returns>Result of testing for containment between this <see cref="BoundingFrustum"/> and specified <see cref="BoundingBox"/>.</returns>
 		public ContainmentType Contains(BoundingBox box)
 		{
-			ContainmentType result = default(ContainmentType);
+			ContainmentType result;
 			this.Contains(ref box, out result);
 			return result;
 		}
@@ -223,7 +229,7 @@ namespace Microsoft.Xna.Framework
 			bool intersects = false;
 			for (int i = 0; i < PlaneCount; i += 1)
 			{
-				PlaneIntersectionType planeIntersectionType = default(PlaneIntersectionType);
+				PlaneIntersectionType planeIntersectionType;
 				box.Intersects(ref this.planes[i], out planeIntersectionType);
 				switch (planeIntersectionType)
 				{
@@ -245,7 +251,7 @@ namespace Microsoft.Xna.Framework
 		/// <returns>Result of testing for containment between this <see cref="BoundingFrustum"/> and specified <see cref="BoundingSphere"/>.</returns>
 		public ContainmentType Contains(BoundingSphere sphere)
 		{
-			ContainmentType result = default(ContainmentType);
+			ContainmentType result;
 			this.Contains(ref sphere, out result);
 			return result;
 		}
@@ -260,7 +266,7 @@ namespace Microsoft.Xna.Framework
 			bool intersects = false;
 			for (int i = 0; i < PlaneCount; i += 1)
 			{
-				PlaneIntersectionType planeIntersectionType = default(PlaneIntersectionType);
+				PlaneIntersectionType planeIntersectionType;
 
 				// TODO: We might want to inline this for performance reasons.
 				sphere.Intersects(ref this.planes[i], out planeIntersectionType);
@@ -284,7 +290,7 @@ namespace Microsoft.Xna.Framework
 		/// <returns>Result of testing for containment between this <see cref="BoundingFrustum"/> and specified <see cref="Vector3"/>.</returns>
 		public ContainmentType Contains(Vector3 point)
 		{
-			ContainmentType result = default(ContainmentType);
+			ContainmentType result;
 			this.Contains(ref point, out result);
 			return result;
 		}
@@ -296,7 +302,6 @@ namespace Microsoft.Xna.Framework
 		/// <param name="result">Result of testing for containment between this <see cref="BoundingFrustum"/> and specified <see cref="Vector3"/> as an output parameter.</param>
 		public void Contains(ref Vector3 point, out ContainmentType result)
 		{
-			bool intersects = false;
 			for (int i = 0; i < PlaneCount; i += 1)
 			{
 				float classifyPoint = (
@@ -305,18 +310,13 @@ namespace Microsoft.Xna.Framework
 					(point.Z * planes[i].Normal.Z) +
 					planes[i].D
 				);
-				if (classifyPoint > 0)
+				if (classifyPoint > 1E-5f)
 				{
 					result = ContainmentType.Disjoint;
 					return;
 				}
-				else if (classifyPoint == 0)
-				{
-					intersects = true;
-					break;
-				}
 			}
-			result = intersects ? ContainmentType.Intersects : ContainmentType.Contains;
+			result = ContainmentType.Contains;
 		}
 
 		/// <summary>
@@ -363,7 +363,7 @@ namespace Microsoft.Xna.Framework
 		/// <returns><c>true</c> if specified <see cref="BoundingBox"/> intersects with this <see cref="BoundingFrustum"/>; <c>false</c> otherwise.</returns>
 		public bool Intersects(BoundingBox box)
 		{
-			bool result = false;
+			bool result;
 			this.Intersects(ref box, out result);
 			return result;
 		}
@@ -375,7 +375,7 @@ namespace Microsoft.Xna.Framework
 		/// <param name="result"><c>true</c> if specified <see cref="BoundingBox"/> intersects with this <see cref="BoundingFrustum"/>; <c>false</c> otherwise as an output parameter.</param>
 		public void Intersects(ref BoundingBox box, out bool result)
 		{
-			ContainmentType containment = default(ContainmentType);
+			ContainmentType containment;
 			this.Contains(ref box, out containment);
 			result = containment != ContainmentType.Disjoint;
 		}
@@ -387,7 +387,7 @@ namespace Microsoft.Xna.Framework
 		/// <returns><c>true</c> if specified <see cref="BoundingSphere"/> intersects with this <see cref="BoundingFrustum"/>; <c>false</c> otherwise.</returns>
 		public bool Intersects(BoundingSphere sphere)
 		{
-			bool result = default(bool);
+			bool result;
 			this.Intersects(ref sphere, out result);
 			return result;
 		}
@@ -399,7 +399,7 @@ namespace Microsoft.Xna.Framework
 		/// <param name="result"><c>true</c> if specified <see cref="BoundingSphere"/> intersects with this <see cref="BoundingFrustum"/>; <c>false</c> otherwise as an output parameter.</param>
 		public void Intersects(ref BoundingSphere sphere, out bool result)
 		{
-			ContainmentType containment = default(ContainmentType);
+			ContainmentType containment;
 			this.Contains(ref sphere, out containment);
 			result = containment != ContainmentType.Disjoint;
 		}
@@ -423,14 +423,24 @@ namespace Microsoft.Xna.Framework
 		/// <param name="result">A plane intersection type as an output parameter.</param>
 		public void Intersects(ref Plane plane, out PlaneIntersectionType result)
 		{
-			result = plane.Intersects(ref corners[0]);
-			for (int i = 1; i < corners.Length; i += 1)
+			float distance;
+			plane.DotCoordinate(ref corners[0], out distance);
+			bool isInFront = (distance > 0f);
+			for (int i = 1; i < corners.Length; i++)
 			{
-				if (plane.Intersects(ref corners[i]) != result)
+				plane.DotCoordinate(ref corners[i], out distance);
+				// If one corner is in front and another behind, we're intersecting no matter what
+				bool anotherInFront = (distance > 0f);
+				if (anotherInFront != isInFront)
 				{
 					result = PlaneIntersectionType.Intersecting;
+					return;
 				}
 			}
+
+			// If we made it here, all corners are on the same side as the first corner we checked.
+			// Note that all corners having a distance of exactly 0 also counts as Back, not Intersecting
+			result = isInFront ? PlaneIntersectionType.Front : PlaneIntersectionType.Back;
 		}
 
 		/// <summary>
@@ -644,17 +654,7 @@ namespace Microsoft.Xna.Framework
 		/// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
 		public static bool operator ==(BoundingFrustum a, BoundingFrustum b)
 		{
-			if (object.Equals(a, null))
-			{
-				return (object.Equals(b, null));
-			}
-
-			if (object.Equals(b, null))
-			{
-				return (object.Equals(a, null));
-			}
-
-			return a.matrix == (b.matrix);
+			return ReferenceEquals(a, null) ? ReferenceEquals(b, null) : a.Equals(b);
 		}
 
 		/// <summary>
@@ -675,7 +675,7 @@ namespace Microsoft.Xna.Framework
 		/// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
 		public bool Equals(BoundingFrustum other)
 		{
-			return (this == other);
+			return ReferenceEquals(this, other) || !ReferenceEquals(other, null) && other.matrix == matrix;
 		}
 
 		/// <summary>
@@ -685,7 +685,7 @@ namespace Microsoft.Xna.Framework
 		/// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
 		public override bool Equals(object obj)
 		{
-			return (obj is BoundingFrustum) && Equals((BoundingFrustum) obj);
+			return Equals(obj as BoundingFrustum);
 		}
 
 		/// <summary>
